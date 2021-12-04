@@ -19,6 +19,26 @@ void day02() {
     int result = horizontalPosition * yourDepth;
     std::cout << "Day 2: What do you get if you multiply your final horizontal position "
                  "by your final depth? " << result << std::endl;
+
+    // Part Two
+    int aim{};
+    horizontalPosition = 0;
+    yourDepth = 0;
+    for (int i = 0; i < input.size()-1; i++) {
+        if (input[2*i] == "down") {
+            aim += stoi(input[2*i+1]);
+        }
+        else if (input[2*i] == "up") {
+            aim -= stoi(input[2*i+1]);
+        }
+        else if (input[2*i] == "forward") {
+            horizontalPosition += stoi(input[2*i+1]);
+            yourDepth += aim * stoi(input[2*i+1]);
+        }
+    }
+    result = horizontalPosition * yourDepth;
+    std::cout << "Day 2: What do you get if you multiply your final horizontal position by your final "
+                 "depth? " << result << std::endl;
 }
 
 std::vector<std::string> fileToVector2(std::string file) {
@@ -36,5 +56,6 @@ std::vector<std::string> fileToVector2(std::string file) {
     std::istringstream iss(input);
     for (std::string s; iss >> s; )
         result.push_back(s);
+
     return result;
 }
