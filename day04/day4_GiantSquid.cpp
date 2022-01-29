@@ -4,7 +4,9 @@ struct returnData{
     std::vector<Board*> boards;
 };
 
-returnData createMatrices(const std::string& file);
+returnData createBoards(const std::string&);
+int calculateFinalScore(std::vector<int>, std::vector<Board*>);
+
 typedef int matrix[5][5];
 #define ROW(n) (*(*val+((n)*5)+0),*(*val+((n)*5)+1), *(*val+((n)*5)+2), *(*val+((n)*5)+3, *(*val+((n)*5)+4)))
 
@@ -19,23 +21,101 @@ struct Board {
 
     matrix values;
     bool markedValues[5][5]{};
-    static bool bingo(); //TODO
-    void markValues(int input); //TODO
+    bool bingo();
+    bool markValues(int input);
+    int calculateScore();
 };
 
-bool Board::bingo() { return false; }
+bool Board::bingo() {
+    /** Returns true when all numbers in any row or any column of a board are marked (i.e. elements in markedValues
+     * are true) **/
+     bool flag{true};
+    // Check all rows
+    for(int i = 0; i < 5; i++){
+        for(int j = 0; j < 5; j++){
+            if (!this->markedValues[i][j]) {
+                flag = false;
+                break;
+            }
+            if (j == 4 && flag) {
+                return true;
+            }
+        }
+    }
+    flag = true;
+    // Check all columns
+    for(int i = 0; i < 5; i++){
+        for(int j = 0; j < 5; j++){
+            if (!this->markedValues[j][i]) {
+                flag = false;
+                break;
+            }
+            if (j == 4 && flag) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
-void Board::markValues(int input) {}
+bool Board::markValues(int input) {
+    /** Marks numbers on our boards (i.e. sets elements in markedValues to true) */
+    bool marked{};
+    for(int i = 0; i < 5; i++){
+        for(int j = 0; j < 5; j++){
+            if(this->values[i][j] == input){
+                this->markedValues[i][j] = true;
+                marked = true;
+            }
+        }
+    }
+    return marked;
+}
+
+int Board::calculateScore() {
+    int sumOfUnmarkedValues{};
+    for(int i = 0; i < 5; i++){
+        for(int j = 0; j < 5; j++){
+            if (!this->markedValues[i][j]) {
+                sumOfUnmarkedValues += this->values[i][j];
+            }
+        }
+    }
+    return sumOfUnmarkedValues;
+}
 
 void day04(){
     // Part One
-    auto [numbers, boards] = createMatrices("../day04/day4_test.txt");
+    auto [numbers, boards] = createBoards("../day04/day4_input.txt");
+    int finalScore = calculateFinalScore(numbers, boards);
+    std::cout << "What will your final score be if you choose that board? " << finalScore<< std::endl;
 }
 
-returnData createMatrices(const std::string& file) {
+int calculateFinalScore(std::vector<int> numbers, std::vector<Board*> boards) {
+    int finalScore{};
+    int calledNumber{};
+    for (int number : numbers) {
+        for (Board* board : boards) {
+            if (board->markValues(number)) {
+                if (board->bingo()) {
+                    finalScore = board->calculateScore();
+                }
+            }
+            if (finalScore != 0) {break;}
+        }
+        if (finalScore != 0) {
+            calledNumber = number;
+            break;
+        }
+    }
+    finalScore = calledNumber * finalScore;
+    return finalScore;
+}
+
+returnData createBoards(const std::string& file) {
     /** Read file, thereafter place numbers in vector vector and create a Board for each set of 5x5 grid of numbers.
      * Lastly, we return a vector with all randomly chosen numbers and a vector with pointers to all boards **/
-    std::vector<std::string> s = fileToVector03("../day04/day4_test.txt");
+    std::vector<std::string> s = fileToVector03(file);
     std::string stringNumbers = s[0];
     std::stringstream ss(stringNumbers);
     std::vector<int> numbers;
